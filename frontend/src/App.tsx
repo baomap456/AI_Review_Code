@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Bot, Send, FolderGit2, AlertTriangle } from 'lucide-react';
 import { useAIStream } from './hooks/useAIStream';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 function App() {
   // Thay đổi path mặc định thành thư mục chứa repo hiện tại của bạn
@@ -96,17 +98,36 @@ function App() {
                 li: ({ node, ...props }) => <li className="text-gray-300" {...props} />,
                 p: ({ node, ...props }) => <p className="mb-4 text-gray-300 leading-relaxed" {...props} />,
                 code: ({ node, className, children, ...props }) => {
-                  // Phân biệt inline code (code ngắn) và block code (code dài)
                   const match = /language-(\w+)/.exec(className || '');
-                  return !match && !className ? (
-                    <code className="bg-gray-700 text-yellow-300 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
-                      {children}
-                    </code>
-                  ) : (
-                    <div className="bg-gray-950 p-4 rounded-lg overflow-x-auto text-sm mb-6 border border-gray-700 font-mono text-green-400">
-                      <code className={className} {...props}>
+                  const isInline = !match && !className;
+
+                  if (isInline) {
+                    return (
+                      <code className="bg-gray-700 text-yellow-300 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
                         {children}
                       </code>
+                    );
+                  }
+
+                  return (
+                    <div className="my-6 rounded-lg overflow-hidden border border-gray-700 shadow-md">
+                      <div className="bg-gray-950 px-4 py-1.5 text-xs font-mono text-gray-400 flex justify-between items-center border-b border-gray-800">
+                        <span>{match ? match[1].toUpperCase() : 'CODE'}</span>
+                      </div>
+                      <SyntaxHighlighter
+                        language={match ? match[1] : 'text'}
+                        style={vscDarkPlus}
+                        PreTag="div"
+                        customStyle={{
+                          margin: 0,
+                          background: '#090d16',
+                          padding: '1.25rem',
+                          fontSize: '0.875rem',
+                        }}
+                        {...props}
+                      >
+                        {String(children).replace(/\n$/, '')}
+                      </SyntaxHighlighter>
                     </div>
                   );
                 }
