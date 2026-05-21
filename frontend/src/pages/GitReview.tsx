@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { FolderGit2, Send, AlertTriangle } from 'lucide-react';
+import { FolderGit2, Send, AlertTriangle, FolderSearch } from 'lucide-react';
 import { useAIStream } from '../hooks/useAIStream';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -11,8 +11,20 @@ export default function GitReview() {
 
     const { reviewText, isLoading, error, startReview } = useAIStream();
 
+    const handlePickFolder = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/review/pick-folder');
+            const data = await response.json();
+            if (data.path) {
+                setRepoPath(data.path); // Điền đường dẫn vừa lấy được vào ô Input
+            }
+        } catch (err) {
+            console.error("Lỗi khi mở hộp thoại chọn thư mục:", err);
+        }
+    };
+
     const handleReview = () => {
-        if (repoPath) startReview(repoPath, language, '');
+        if (repoPath) startReview(repoPath, language, '', false);
     };
 
     return (
@@ -22,12 +34,23 @@ export default function GitReview() {
                     <label className="flex items-center gap-2 text-sm text-gray-400 mb-2 font-medium">
                         <FolderGit2 size={16} /> Git Repository Path (Local)
                     </label>
-                    <input
-                        type="text"
-                        value={repoPath}
-                        onChange={(e) => setRepoPath(e.target.value)}
-                        className="w-full bg-gray-950 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500"
-                    />
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={repoPath}
+                            onChange={(e) => setRepoPath(e.target.value)}
+                            className="flex-1 bg-gray-950 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500"
+                            placeholder="Bấm nút chọn thư mục bên cạnh ->"
+                        />
+                        {/* 🚀 NÚT BROWSE GỌI API PYTHON */}
+                        <button
+                            onClick={handlePickFolder}
+                            className="flex items-center gap-2 px-4 py-3 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white rounded-lg font-medium transition-all"
+                            title="Mở hộp thoại chọn thư mục"
+                        >
+                            <FolderSearch size={18} /> Chọn thư mục
+                        </button>
+                    </div>
                 </div>
 
                 <div>

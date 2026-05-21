@@ -6,7 +6,7 @@ export const useAIStream = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const startReview = async (repoPath: string, language: string, rawCode: string) => {
+    const startReview = async (repoPath: string, language: string, rawCode: string, isProjectMode: boolean) => {
         // 1. Reset lại toàn bộ state (trạng thái) trước khi bắt đầu
         setIsLoading(true);
         setReviewText('');
@@ -17,7 +17,12 @@ export const useAIStream = () => {
             const response = await fetch('http://127.0.0.1:8000/api/review/stream', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ repo_path: repoPath, language, raw_code: rawCode }),
+                body: JSON.stringify({
+                    repo_path: repoPath || null,
+                    raw_code: rawCode || null,
+                    language: language,
+                    is_project_mode: isProjectMode || false // Lấy trực tiếp cờ do UI truyền xuống
+                }),
             });
 
             // Bắt lỗi nếu Backend báo file không tồn tại hoặc lỗi Git

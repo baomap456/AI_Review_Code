@@ -14,7 +14,7 @@ export default function ManualReview() {
     const handleReview = () => {
         if (rawCode) {
             // repoPath bỏ trống, isProjectMode = false
-            startReview('', language, rawCode);
+            startReview('', language, rawCode, false);
         }
     };
 
@@ -83,27 +83,47 @@ export default function ManualReview() {
                             li: ({ node, ...props }) => <li className="text-gray-300" {...props} />,
                             p: ({ node, ...props }) => <p className="mb-4 text-gray-300 leading-relaxed" {...props} />,
                             code: ({ node, className, children, ...props }) => {
-                                const codeString = String(children).replace(/\n$/, '');
-                                const isMultiline = codeString.includes('\n');
                                 const match = /language-(\w+)/.exec(className || '');
-                                const isInline = !match && !isMultiline;
+                                // Tự động làm sạch các dấu xuống dòng thừa ở cuối đoạn code
+                                const codeString = String(children).replace(/\n$/, '');
+
+                                // Kiểm tra chính xác xem đây có phải là đoạn code nội tuyến (inline) hay không
+                                const isInline = !match && !codeString.includes('\n');
 
                                 if (isInline) {
+                                    // Đã gỡ bỏ {...props} để tránh lỗi
                                     return (
-                                        <code className="bg-gray-700 text-yellow-300 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+                                        <code className="bg-gray-700 text-yellow-300 px-1.5 py-0.5 rounded text-sm font-mono">
                                             {children}
                                         </code>
                                     );
                                 }
 
                                 return (
-                                    <div className="my-6 rounded-lg border border-gray-700 shadow-md bg-[#090d16]">
+                                    <div className="my-6 rounded-lg border border-gray-700 shadow-md bg-[#090d16] text-left">
                                         <div className="bg-gray-950 px-4 py-1.5 text-xs font-mono text-gray-400 flex justify-between items-center border-b border-gray-800">
                                             <span>{match ? match[1].toUpperCase() : 'CODE'}</span>
                                         </div>
-                                        <SyntaxHighlighter style={vscDarkPlus} language={match ? match[1] : undefined} {...props}>
-                                            {codeString}
-                                        </SyntaxHighlighter>
+
+                                        <div className="overflow-x-auto">
+                                            <SyntaxHighlighter
+                                                language={match ? match[1] : 'text'}
+                                                style={vscDarkPlus}
+                                                PreTag="div"
+                                                lineProps={{ style: { display: 'block' } }}
+                                                showLineNumbers={true}
+                                                wrapLines={true}
+                                                codeTagProps={{ style: { display: 'flex', flexDirection: 'column' } }}
+                                                customStyle={{
+                                                    margin: 0,
+                                                    background: 'transparent',
+                                                    padding: '1.25rem',
+                                                    fontSize: '0.875rem',
+                                                }}
+                                            >
+                                                {codeString}
+                                            </SyntaxHighlighter>
+                                        </div>
                                     </div>
                                 );
                             }

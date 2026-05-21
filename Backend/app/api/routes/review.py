@@ -5,11 +5,33 @@ from app.services.ollama_service import OllamaService
 from app.services.git_service import GitService
 from app.services.project_service import ProjectService  # Import thêm service mới
 from app.core.prompts import CODE_REVIEW_PROMPT, RAW_CODE_REVIEW_PROMPT, PROJECT_REVIEW_PROMPT
+import tkinter as tk
+from tkinter import filedialog
 
 router = APIRouter()
 ollama_service = OllamaService()
 git_service = GitService()
 project_service = ProjectService() 
+
+@router.get("/pick-folder")
+def pick_folder():
+    """
+    API nội bộ: Ép hệ điều hành mở hộp thoại chọn thư mục dự án
+    """
+    # Khởi tạo cửa sổ ẩn
+    root = tk.Tk()
+    root.withdraw()
+    
+    # Ép hộp thoại hiện lên trên cùng (không bị trình duyệt che lấp)
+    root.attributes('-topmost', True)
+    
+    # Mở hộp thoại và lấy đường dẫn
+    folder_path = filedialog.askdirectory(title="Chọn thư mục Dự án / Git Repository")
+    
+    # Hủy cửa sổ ẩn để giải phóng RAM
+    root.destroy()
+    
+    return {"path": folder_path}
 
 @router.post("/stream")
 async def analyze_code_stream(payload: ReviewRequest):

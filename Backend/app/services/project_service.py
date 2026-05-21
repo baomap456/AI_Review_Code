@@ -37,7 +37,8 @@ class ProjectService:
                     continue
                 
                 file_path = os.path.join(root, file)
-                _, ext = os.path.splitext(file).lower()
+                _, ext = os.path.splitext(file)
+                ext = ext.lower()
                 
                 if ext in self.extension_map:
                     detected_extensions.append(ext)
